@@ -14,11 +14,13 @@ class GraphVisualizer:
         event.widget.config(bg="SystemButtonFace")  # Cor original ao sair do hover
 
     def create_buttons(self):
+        # Botão para carregar arquivo
         self.load_button = Button(self.master, text="Carregar Arquivo", command=self.load_graph_file, width=20, height=2)
         self.load_button.pack(pady=(20, 0))
         self.load_button.bind("<Enter>", self.hover_enter)
         self.load_button.bind("<Leave>", self.hover_leave)
 
+        # Botão para gerar Árvore Geradora Mínima
         self.kruskal_button = Button(self.master, text="Árvore Geradora Mínima", command=self.generate_minimum_spanning_tree, width=20, height=2)
         self.kruskal_button.pack(pady=(10, 0))
         self.kruskal_button.bind("<Enter>", self.hover_enter)
@@ -72,6 +74,7 @@ class GraphVisualizer:
         self.create_buttons()
 
     def load_graph_file(self):
+        # Função para carregar o arquivo do grafo
         file_path = filedialog.askopenfilename(filetypes=[("Text files", "*.txt")])
         if file_path:
             self.graph = self.read_graph(file_path)
@@ -81,8 +84,8 @@ class GraphVisualizer:
             self.load_graph()
             self.draw_graph()
 
-
     def read_graph(self, file_path):
+        # Função para ler o grafo do arquivo
         with open(file_path, 'r') as file:
             lines = file.readlines()
             graph = []
@@ -92,6 +95,7 @@ class GraphVisualizer:
             return graph
 
     def load_graph(self):
+        # Função para carregar o grafo usando NetworkX
         self.G = nx.Graph()
         num_nodes = len(self.graph)
 
@@ -101,6 +105,7 @@ class GraphVisualizer:
                     self.G.add_edge(chr(65 + i), chr(65 + j), weight=self.graph[i][j])
 
     def draw_graph(self):
+        # Função para desenhar o grafo no canvas
         self.graph_ax.clear()
         # Use o layout armazenado
         if self.graph_layout is None:
@@ -120,6 +125,7 @@ class GraphVisualizer:
         self.graph_canvas.draw()
 
     def generate_minimum_spanning_tree(self):
+        # Função para gerar e exibir a Árvore Geradora Mínima
         if hasattr(self, 'G'):  # Verifica se o grafo foi carregado
             self.tree_ax.clear()
             mst = nx.Graph()
@@ -136,13 +142,14 @@ class GraphVisualizer:
             self.info_label.config(text="Por favor, carregue o arquivo primeiro.")
 
     def kruskal_algorithm(self):
+        # Implementação do algoritmo de Kruskal para encontrar a Árvore Geradora Mínima
         edges = []
         for i in range(len(self.graph)):
             for j in range(len(self.graph[i])):
                 if self.graph[i][j] > 0:
                     edges.append((chr(65 + i), chr(65 + j), self.graph[i][j]))
 
-        edges.sort(key=lambda x: x[2])
+        edges.sort(key=lambda x: (x[2], x[0], x[1]))
 
         mst = set()
         parent = {}
@@ -165,6 +172,7 @@ class GraphVisualizer:
             if find(u) != find(v):
                 mst.add((u, v))
                 union(u, v)
+                print(f"Aresta: ({u}, {v}), Peso: {weight}")
                 yield mst
 
             # Verifica se a árvore geradora mínima está completa
@@ -172,12 +180,13 @@ class GraphVisualizer:
                 break
 
     def animate_tree_generation(self, mst):
+        # Animação da construção da Árvore Geradora Mínima
         mst_edges = list(mst.edges())
 
         total_weight = sum([self.G[u][v]['weight'] for u, v in mst_edges])
         self.info_label.config(text=f"Peso mínimo da árvore geradora: {total_weight}")
 
-        pos = self.graph_layout  # Use o mesmo layout do grafo original
+        pos = self.graph_layout  # Usar o mesmo layout do grafo original
 
         for i in range(len(mst_edges) + 1):
             self.tree_ax.clear()
@@ -202,6 +211,7 @@ class GraphVisualizer:
             self.master.after(1000)
 
     def draw_mst(self, mst, edge):
+        # Função para desenhar a Árvore Geradora Mínima
         pos = nx.spring_layout(self.G)
 
         nx.draw_networkx_nodes(self.G, pos, ax=self.tree_ax, nodelist=self.G.nodes(), node_size=700, node_color='skyblue')
