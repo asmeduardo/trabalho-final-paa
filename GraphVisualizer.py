@@ -27,7 +27,7 @@ class GraphVisualizer:
 
     def __init__(self, master):
         self.master = master
-        self.master.title("Visualizador de Gráficos")
+        self.master.title("Visualizador de Grafos")
 
         # Frames
         self.canvas_frame = tk.Frame(master)
