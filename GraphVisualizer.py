@@ -3,8 +3,7 @@ from tkinter import filedialog  # Adicionado para a caixa de diálogo de seleç�
 import networkx as nx
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from tkinter import Canvas, Label, Button, StringVar
-from itertools import combinations
+from tkinter import Label, Button
 
 class GraphVisualizer:
     def hover_enter(self, event):
@@ -188,7 +187,9 @@ class GraphVisualizer:
 
         pos = self.graph_layout  # Usar o mesmo layout do grafo original
 
-        for i in range(len(mst_edges) + 1):
+        sorted_mst_edges = sorted(mst_edges, key=lambda edge: (self.G[edge[0]][edge[1]]['weight'], edge[0], edge[1]))
+
+        for i in range(len(sorted_mst_edges) + 1):
             self.tree_ax.clear()
 
             nx.draw_networkx_nodes(self.G, pos, ax=self.tree_ax, nodelist=self.G.nodes(), node_size=700, node_color='skyblue')
@@ -196,7 +197,7 @@ class GraphVisualizer:
             nx.draw_networkx_edges(self.G, pos, ax=self.tree_ax)
 
             current_mst = nx.Graph()
-            current_mst.add_edges_from(mst_edges[:i])
+            current_mst.add_edges_from(sorted_mst_edges[:i])
 
             nx.draw_networkx_nodes(self.G, pos, ax=self.tree_ax, nodelist=current_mst.nodes(), node_size=700, node_color='#00FF00')
             nx.draw_networkx_nodes(self.G, pos, ax=self.tree_ax, nodelist=set(self.G.nodes()) - set(current_mst.nodes()), node_size=700, node_color='skyblue')
@@ -210,7 +211,7 @@ class GraphVisualizer:
             self.master.update()
             self.master.after(1000)
 
-    def draw_mst(self, mst, edge):
+    def draw_mst(self, mst):
         # Função para desenhar a Árvore Geradora Mínima
         pos = nx.spring_layout(self.G)
 
